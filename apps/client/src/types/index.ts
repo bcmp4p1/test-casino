@@ -11,3 +11,7 @@ export interface SessionResponse {
   message: string;
   credits: number;
 }
+export interface CashoutResponse {
+  message: string;
+  finalCredits: number;
+}

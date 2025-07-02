@@ -1,15 +1,10 @@
 import { SessionService } from './session.service';
 import { Response, Request } from 'express';
-import { SessionResponseDto } from './session-response.dto';
-import { SlotResult } from './types';
+import { CashoutResponseDto, ResponseDto, RollResponseDto } from 'src/session/response.dto';
 export declare class SessionController {
     private readonly sessionService;
     constructor(sessionService: SessionService);
-    createSession(res: Response): SessionResponseDto;
-    roll(req: Request, res: Response): Response<any, Record<string, any>> | {
-        result: SlotResult;
-        isWin: boolean;
-        reward: number;
-        credits: number;
-    };
+    createSession(res: Response): ResponseDto;
+    roll(req: Request, res: Response): RollResponseDto | Response;
+    cashOut(req: Request, res: Response): CashoutResponseDto | Response;
 }

@@ -4,9 +4,10 @@ import { roll } from '../api/casinoApi.ts';
 interface Props {
   credits: number;
   setCredits: (credits: number) => void;
+  sessionClosed: boolean;
 }
 
-export const SlotMachine: React.FC<Props> = ({ credits, setCredits }) => {
+export const SlotMachine: React.FC<Props> = ({ credits, setCredits, sessionClosed }) => {
   const [result, setResult] = useState<string[] | null[]>([null, null, null]);
   const [isSpinning, setIsSpinning] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +45,7 @@ export const SlotMachine: React.FC<Props> = ({ credits, setCredits }) => {
               width: '60px',
               height: '60px',
               border: '1px solid black',
+              borderRadius: '4px',
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
@@ -57,9 +59,13 @@ export const SlotMachine: React.FC<Props> = ({ credits, setCredits }) => {
         {isSpinning ? 'Spinning...' : 'Spin'}
       </button>
       {error && <p style={{ color: 'red', marginTop: 10 }}>{error}</p>}
-      {credits === 0 && (
+      {sessionClosed ? (
+        <p style={{ color: 'gray', marginTop: 10 }}>
+          Funds withdrawn. Please refresh the page to start a new session.
+        </p>
+      ) : credits === 0 && (
         <p style={{ color: 'orange', marginTop: 10 }}>
-          You're out of credits. Please cash out or refresh session.
+          You're out of credits.
         </p>
       )}
     </div>

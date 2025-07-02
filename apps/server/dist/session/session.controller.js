@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SessionController = void 0;
 const common_1 = require("@nestjs/common");
 const session_service_1 = require("./session.service");
-const session_response_dto_1 = require("./session-response.dto");
+const response_dto_1 = require("./response.dto");
 const types_1 = require("./types");
 let SessionController = class SessionController {
     constructor(sessionService) {
@@ -80,8 +80,24 @@ let SessionController = class SessionController {
         return {
             result,
             isWin,
-            reward: isWin ? reward : 0,
+            reward,
             credits: session.credits,
+        };
+    }
+    cashOut(req, res) {
+        const sessionId = req.cookies?.sessionId;
+        if (!sessionId) {
+            return res.status(400).json({ error: 'Missing sessionId' });
+        }
+        const session = this.sessionService.getSession(sessionId);
+        if (!session) {
+            return res.status(404).json({ error: 'Session not found' });
+        }
+        const finalCredits = session.credits;
+        this.sessionService.deleteSession(sessionId);
+        return {
+            message: 'Cash out successful',
+            finalCredits,
         };
     }
 };
@@ -91,7 +107,7 @@ __decorate([
     __param(0, (0, common_1.Res)({ passthrough: true })),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", session_response_dto_1.SessionResponseDto)
+    __metadata("design:returntype", response_dto_1.ResponseDto)
 ], SessionController.prototype, "createSession", null);
 __decorate([
     (0, common_1.Post)('/roll'),
@@ -99,8 +115,16 @@ __decorate([
     __param(1, (0, common_1.Res)({ passthrough: true })),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Object]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Object)
 ], SessionController.prototype, "roll", null);
+__decorate([
+    (0, common_1.Post)('/cashout'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Res)({ passthrough: true })),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Object)
+], SessionController.prototype, "cashOut", null);
 exports.SessionController = SessionController = __decorate([
     (0, common_1.Controller)('session'),
     __metadata("design:paramtypes", [session_service_1.SessionService])

@@ -1,7 +1,7 @@
 import { Controller, Post, Res, Req, HttpStatus } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { Response, Request } from 'express';
-import { SessionResponseDto } from './session-response.dto';
+import { CashoutResponseDto, ResponseDto, RollResponseDto } from 'src/session/response.dto';
 import { Fruit, FRUIT_REWARDS, SlotResult } from './types';
 
 @Controller('session')
@@ -9,7 +9,7 @@ export class SessionController {
   constructor(private readonly sessionService: SessionService) {}
 
   @Post('/')
-  createSession(@Res({ passthrough: true }) res: Response): SessionResponseDto {
+  createSession(@Res({ passthrough: true }) res: Response): ResponseDto {
     const session = this.sessionService.createSession();
     res.cookie('sessionId', session.id, {
       httpOnly: true,
@@ -18,7 +18,7 @@ export class SessionController {
   }
 
   @Post('/roll')
-  roll(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+  roll(@Req() req: Request, @Res({ passthrough: true }) res: Response): RollResponseDto | Response {
     const sessionId = req.cookies?.sessionId;
 
     if (!sessionId) {
@@ -64,7 +64,7 @@ export class SessionController {
         const isRerollWin = r1 === r2 && r2 === r3;
 
         if (isRerollWin) {
-          reward = FRUIT_REWARDS[r1]
+          reward = FRUIT_REWARDS[r1];
           session.credits += reward;
         } else {
           isWin = false;
@@ -82,8 +82,30 @@ export class SessionController {
     return {
       result,
       isWin,
-      reward: isWin ? reward : 0,
+      reward,
       credits: session.credits,
+    };
+  }
+
+  @Post('/cashout')
+  cashOut(@Req() req: Request, @Res({ passthrough: true }) res: Response): CashoutResponseDto | Response {
+    const sessionId = req.cookies?.sessionId;
+    if (!sessionId) {
+      return res.status(400).json({ error: 'Missing sessionId' });
+    }
+
+    const session = this.sessionService.getSession(sessionId);
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    const finalCredits = session.credits;
+
+    this.sessionService.deleteSession(sessionId);
+
+    return {
+      message: 'Cash out successful',
+      finalCredits,
     };
   }
 }
