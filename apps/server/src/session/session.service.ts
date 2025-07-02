@@ -24,8 +24,8 @@ export class SessionService {
     return this.sessions.get(id);
   }
 
-  updateSession(id: string, session: Session) {
-    this.sessions.set(id, session);
+  updateSession(session: Session) {
+    this.sessions.set(session.id, session);
   }
 
   deleteSession(id: string) {

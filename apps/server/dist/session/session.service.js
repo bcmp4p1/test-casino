@@ -25,8 +25,8 @@ let SessionService = class SessionService {
     getSession(id) {
         return this.sessions.get(id);
     }
-    updateSession(id, session) {
-        this.sessions.set(id, session);
+    updateSession(session) {
+        this.sessions.set(session.id, session);
     }
     deleteSession(id) {
         this.sessions.delete(id);

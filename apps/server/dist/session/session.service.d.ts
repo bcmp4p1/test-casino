@@ -6,7 +6,7 @@ export declare class SessionService {
     private sessions;
     createSession(): Session;
     getSession(id: string): Session | undefined;
-    updateSession(id: string, session: Session): void;
+    updateSession(session: Session): void;
     deleteSession(id: string): void;
 }
 export {};
