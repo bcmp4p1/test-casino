@@ -1,35 +1,34 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useEffect, useState } from 'react';
 import './App.css'
+import { createSession } from './api/casinoApi.ts';
+import { Credits } from './components/Credits.tsx';
+import { SlotMachine } from './components/SlotMachine.tsx';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [credits, setCredits] = useState<number>(0);
+
+
+  const initSession = async () => {
+    try {
+      const data = await createSession();
+      setCredits(data.credits);
+    } catch (err) {
+      console.error('Failed to create session', err);
+      alert('Failed to create session. Please try again later.');
+    }
+  };
+
+  useEffect(() => {
+    initSession()
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div style={{ textAlign: 'center', marginTop: 50 }}>
+      <h1>🎰 Slot Machine</h1>
+      <SlotMachine credits={credits} setCredits={setCredits} />
+      <Credits value={credits} />
+    </div>
+  );
 }
 
 export default App
