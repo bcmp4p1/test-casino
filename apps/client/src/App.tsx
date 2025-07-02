@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import './App.css'
 import { cashout, createSession } from './api/casinoApi.ts';
-import { Credits } from './components/Credits.tsx';
-import { SlotMachine } from './components/SlotMachine.tsx';
+import { Credits } from './components/Credits/Credits.tsx';
+import { SlotMachine } from './components/SlotMachine/SlotMachine.tsx';
 
 function App() {
   const [credits, setCredits] = useState<number>(0);

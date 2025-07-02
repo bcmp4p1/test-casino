@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { roll } from '../api/casinoApi.ts';
+import { roll } from '../../api/casinoApi.ts';
 
 interface Props {
   credits: number;
@@ -8,7 +8,7 @@ interface Props {
 }
 
 export const SlotMachine: React.FC<Props> = ({ credits, setCredits, sessionClosed }) => {
-  const [result, setResult] = useState<string[] | null[]>([null, null, null]);
+  const [result, setResult] = useState<string[]>(['-', '-', '-']);
   const [isSpinning, setIsSpinning] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
