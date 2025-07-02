@@ -1,14 +1,25 @@
-import { Controller, Post, Res, Req, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Res,
+  Req,
+  HttpStatus,
+  HttpCode,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { SessionService } from './session.service';
 import { Response, Request } from 'express';
-import { CashoutResponseDto, ResponseDto, RollResponseDto } from 'src/session/response.dto';
+import { CashoutResponseDto, ResponseDto, RollResponseDto } from './response.dto';
 import { Fruit, FRUIT_REWARDS, SlotResult } from './types';
+import { CHEATING_THRESHOLDS } from '../constants/cheatingTresholds';
 
 @Controller('session')
 export class SessionController {
   constructor(private readonly sessionService: SessionService) {}
 
   @Post('/')
+  @HttpCode(201)
   createSession(@Res({ passthrough: true }) res: Response): ResponseDto {
     const session = this.sessionService.createSession();
     res.cookie('sessionId', session.id, {
@@ -18,20 +29,21 @@ export class SessionController {
   }
 
   @Post('/roll')
+  @HttpCode(201)
   roll(@Req() req: Request, @Res({ passthrough: true }) res: Response): RollResponseDto | Response {
     const sessionId = req.cookies?.sessionId;
 
     if (!sessionId) {
-      return res.status(HttpStatus.BAD_REQUEST).json({ error: 'Missing sessionId' });
+      throw new BadRequestException('Missing sessionId');
     }
 
     const session = this.sessionService.getSession(sessionId);
     if (!session) {
-      return res.status(HttpStatus.NOT_FOUND).json({ error: 'Session not found' });
+      throw new NotFoundException('Session not found');
     }
 
     if (session.credits < 1) {
-      return res.status(HttpStatus.BAD_REQUEST).json({ error: 'Not enough credits' });
+      throw new BadRequestException('Not enough credits');
     }
 
 
@@ -52,10 +64,10 @@ export class SessionController {
     let rerollChance = 0;
 
     if (isWin) {
-      if (currentCredits >= 40 && currentCredits <= 60) {
-        rerollChance = 0.3;
-      } else if (currentCredits > 60) {
-        rerollChance = 0.6;
+      if (currentCredits >= CHEATING_THRESHOLDS.LOW && currentCredits <= CHEATING_THRESHOLDS.HIGH) {
+        rerollChance = CHEATING_THRESHOLDS.REROLL_CHANCES.MEDIUM;
+      } else if (currentCredits > CHEATING_THRESHOLDS.HIGH) {
+        rerollChance = CHEATING_THRESHOLDS.REROLL_CHANCES.HIGH;
       }
 
       if (Math.random() < rerollChance) {
@@ -91,12 +103,12 @@ export class SessionController {
   cashOut(@Req() req: Request, @Res({ passthrough: true }) res: Response): CashoutResponseDto | Response {
     const sessionId = req.cookies?.sessionId;
     if (!sessionId) {
-      return res.status(400).json({ error: 'Missing sessionId' });
+      throw new BadRequestException('Missing sessionId');
     }
 
     const session = this.sessionService.getSession(sessionId);
     if (!session) {
-      return res.status(404).json({ error: 'Session not found' });
+      throw new NotFoundException('Session not found');
     }
 
     const finalCredits = session.credits;
